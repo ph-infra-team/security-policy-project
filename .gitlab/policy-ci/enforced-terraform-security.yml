@@ -1,0 +1,82 @@
+########################################
+# This cannot be done because of gitlab ultimate license requirement. This is a sample of how the policy would look like if we had the license.
+########################################
+
+stages:
+  - .pipeline-policy-pre
+
+enforced-secret-detection:
+  stage: .pipeline-policy-pre
+  image: registry.midhtech.local:5050/infra_team/platform-images/iac-security:latest
+  tags:
+    - platform
+  script:
+    - gitleaks detect --source . --no-git --redact --verbose
+
+enforced-checkov:
+  stage: .pipeline-policy-pre
+  image: registry.midhtech.local:5050/infra_team/platform-images/iac-security:latest
+  tags:
+    - platform
+  script:
+    - checkov -d . --framework terraform --quiet
+
+enforced-tflint:
+  stage: .pipeline-policy-pre
+  image: registry.midhtech.local:5050/infra_team/platform-images/iac-security:latest
+  tags:
+    - platform
+  script:
+    - tflint --init
+    - tflint --recursive
+
+
+# Step 2 — Go to the correct group
+
+# 👉 Navigate to:
+
+# cloud_team group
+
+# NOT infra_team.
+
+# ✅ Step 3 — Link policy project
+
+# Go to:
+
+# cloud_team → Secure → Policies
+
+# Then:
+
+# Edit policy project
+
+# Select:
+
+# infra_team/security-policy-project
+
+# 👉 This tells GitLab:
+
+# "Use that repo as the source of enforced pipelines"
+# ✅ Step 4 — Create Pipeline Execution Policy
+
+# In same place:
+
+# cloud_team → Secure → Policies → New Policy
+
+# Choose:
+
+# Pipeline Execution Policy
+# Add this in 
+# pipeline_execution_policy:
+#   - name: Enforce Terraform Security Controls
+#     description: Mandatory security scanning for all Terraform repositories
+#     enabled: true
+
+#     pipeline_config_strategy: inject_policy
+
+#     content:
+#       include:
+#         - project: infra_team/security-policy-project
+#           file: .gitlab/policy-ci/enforced-terraform-security.yml
+
+#     skip_ci:
+#       allowed: false
